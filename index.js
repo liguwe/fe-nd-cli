@@ -9,49 +9,62 @@ const chalk = require('chalk');
 const symbols = require('log-symbols');
 const config = require('./config');
 
-program.version('1.0.0', '-v, --version')
-    .command('init <name>')
-    .action((name) => {
-        // 项目不存在
-        if (!fs.existsSync(name)) {
-            inquirer.prompt([
-                {
-                    name: 'description',
-                    message: '请输入项目描述'
-                },
-                {
-                    name: 'author',
-                    message: '请输入作者名称'
-                }
-            ]).then((answers) => {
-                const spinner = ora('正在下载模板...');
-                spinner.start();
-                download(config.githubUrl, name, {clone: false}, (err) => {
-                    // Github拉去文件失败
-                    if (err) {
-                        spinner.fail();
-                        console.log(symbols.error, chalk.red(err));
-                    } else {
-                        spinner.succeed();
-                        const fileName = `${name}/package.json`;
-                        const meta = {
-                            name,
-                            description: answers.description,
-                            author: answers.author
-                        };
-                        if (fs.existsSync(fileName)) {
-                            const content = fs.readFileSync(fileName).toString();
-                            const result = handlebars.compile(content)(meta);
-                            fs.writeFileSync(fileName, result);
-                        }
-                        console.log(symbols.success, chalk.green('项目初始化完成'));
-                    }
-                })
-            })
-        }
-        // 错误提示项目已存在，避免覆盖原有项目
-        else {
-            console.log(symbols.error, chalk.red('项目已存在'));
-        }
+const downloadFromGithub = require('./lib/downloadFromGithub');
+
+// 显示帮助信息
+program.version(require('./package.json').version, '-v, --version')
+    .description('newsdog 前端脚手架')
+    .option('-n, --name <name>', 'your name', 'GK')
+    .option('-a, --age <age>', 'your age', '22')
+    .option('-e, --enjoy [enjoy]');
+
+// 新建项目
+program.command('new <name>')
+    .description('新建项目')
+    .option('-b,--branch <branch>', '选择拉去的分支')
+    .action(function (name, options) {
+        downloadFromGithub(name, options.branch || 'master')
     });
+
+
+/**
+ * 生成React component 或者 生成 Umi Page &  models & services
+ * */
+program.command('generate <type> [directory...]')
+    .alias('g')
+    .description('新建项目')
+    .option('-p,--path <path>', '生成的内容存放的位置')
+    .action(function (type, directory, options) {
+        switch (type) {
+            case 'com':
+            case 'component':
+                break;
+            case 'page':
+                break;
+            case 'models':
+                break;
+            case 'serviser':
+                break;
+        }
+        console.log(type, directory)
+    });
+
+// nd server
+program.command('server')
+    .description('启动开发服务器')
+    .option('-p,--path <path>', '生成的内容存放的位置')
+    .action(function (type, directory, options) {
+        // 读取模板库的package.json文件，确定是启动umi server 还是 egg-script
+        console.log(type, directory)
+    });
+
+// nd build
+program.command('build <type> [directory...]')
+    .description('umi打包')
+    .option('-p,--path <path>', '生成的内容存放的位置')
+    .action(function (type, directory, options) {
+        console.log(type, directory)
+    });
+
+
 program.parse(process.argv);

@@ -1,3 +1,3 @@
 module.exports = {
-    githubUrl: 'https://github.com:liguwe/fe-nd-template#master'
+    githubUrl: 'https://github.com:liguwe/fe-nd-template',
 };
